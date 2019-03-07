@@ -39,6 +39,27 @@ double ComputeDistance(const matrix<double>& mat_hyp,
   //  Output:
   //      Set "dist" to the total distance between these two utterances.
 
+  int hyp_frm_cnt = mat_hyp.size1();
+  int tmp_frm_cnt = mat_templ.size1();
+  matrix<double> mat_dis(hyp_frm_cnt, tmp_frm_cnt);
+  for (int hyp_frm_idx = 0; hyp_frm_idx < hyp_frm_cnt; ++hyp_frm_idx) {
+    for (int tmp_frm_idx = 0; tmp_frm_idx < tmp_frm_cnt; ++tmp_frm_idx) {
+      mat_dis(hyp_frm_idx, tmp_frm_idx) = \
+        EuclideanDistance(mat_hyp, hyp_frm_idx, mat_templ, tmp_frm_idx);
+    }
+  }
+  matrix<double> mat_dtw(mat_dis);
+  #define MIN(x,y) ((x) < (y) ? (x) : (y))
+  for (int hyp_frm_idx = 1; hyp_frm_idx < hyp_frm_cnt; ++hyp_frm_idx) {
+    for (int tmp_frm_idx = 1; tmp_frm_idx < tmp_frm_cnt; ++tmp_frm_idx) {
+      mat_dtw(hyp_frm_idx, tmp_frm_idx) = mat_dis(hyp_frm_idx, tmp_frm_idx) + \
+        MIN(mat_dtw(hyp_frm_idx - 1, tmp_frm_idx - 1), \
+            MIN(mat_dtw(hyp_frm_idx - 1, tmp_frm_idx), \
+                mat_dtw(hyp_frm_idx, tmp_frm_idx - 1)));
+    }
+  }
+  dist = mat_dtw(hyp_frm_cnt - 1, tmp_frm_cnt - 1);
+
   //  END_LAB
   return dist;
 }

@@ -43,6 +43,24 @@ class FrontEnd {
   map<string, string> params_;
 };
 
+
+struct Mel_bin_height {
+    Mel_bin_height() {
+        start_dim_idx = -1;
+    }
+    bool is_empty() {
+        return start_dim_idx == -1;
+    }
+    int start_dim_idx;
+    vector <double> heights;
+};
+
+void add_bin_height(vector<Mel_bin_height>& mel_bin_heights,
+                    int const bin_idx,
+                    int const dim_idx,
+                    double const height);
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
