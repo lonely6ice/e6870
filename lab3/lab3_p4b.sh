@@ -39,7 +39,7 @@ for d in 2000 20000 200000 232838 ; do
     python3 convert_hesitation.py  all.nbest.$d.rec >  all.nbest.$d.rec2
 
     paste -d' ' all.nbest.$d.rec2 p4.id > p4b.$d.reco
-    ./calc-wer.sh p4b.ref p4b.$d.reco > p4b.$d.wer
+    ./calc-wer.sh p4.ref p4b.$d.reco > p4b.$d.wer
 done
 
 #swb2000 44.09%
@@ -47,7 +47,7 @@ done
 #swb200000 44.09%
 #swb232838 43.94 % 
 
-exit 1
+#exit 1
 
 # You could try different lm weight
 echo

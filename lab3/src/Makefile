@@ -10,6 +10,7 @@ endif
 CXX = g++
 JAVAC = javac
 #CPPFLAGS = -I/user1/faculty/stanchen/pub/boost
+CPPFLAGS = -I/usr/local/boost_1_69_0
 CXXFLAGS =  -Wall -std=c++11
 LDFLAGS = $(OPTFLAGS)
 LDLIBS = -lm

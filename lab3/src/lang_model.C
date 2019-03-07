@@ -65,6 +65,30 @@ void LangModel::count_sentence_ngrams(const vector<int>& wordList) {
   //
   //      Your code should work for any value of m_n (larger than zero).
 
+  vector<int> ngramBuf;
+  vector<int> hist_ngramBuf;
+  for (int posIdx = m_n - 1; posIdx < wordCnt; ++posIdx)
+    for (int n = 1; n <= m_n; ++n) {
+      ngramBuf.clear();
+      ngramBuf.insert(ngramBuf.end(),
+                    wordList.begin() + posIdx - n + 1,
+                    wordList.begin() + posIdx + 1);
+
+      hist_ngramBuf.clear();
+      if (n == 1) {
+        hist_ngramBuf.push_back(0);  // <epsilon> 0
+      }
+      else {
+        hist_ngramBuf.insert(hist_ngramBuf.end(),
+                    wordList.begin() + posIdx - n + 1,
+                    wordList.begin() + posIdx);
+      }
+
+      if (m_predCounts.get_count(ngramBuf) == 0)
+        m_histOnePlusCounts.incr_count(hist_ngramBuf);
+      m_predCounts.incr_count(ngramBuf);  // default value is 0 if not exists
+      m_histCounts.incr_count(hist_ngramBuf);
+    }
 
   //  END_LAB
   //
@@ -132,6 +156,18 @@ double LangModel::get_prob_plus_delta(const vector<int>& ngram) const {
   //      "retProb" should be set to the smoothed n-gram probability
   //          of the last word in the n-gram given the previous words.
   //
+  
+  vector<int> hist_ngramBuf;
+  if (m_n == 1) {
+    hist_ngramBuf.push_back(0); // <epsilon> 0
+  }
+  else {
+    hist_ngramBuf.insert(hist_ngramBuf.end(),
+                          ngram.begin(),
+                          ngram.end() - 1);
+  }
+  retProb = (m_predCounts.get_count(ngram) + m_delta) \
+            / (m_histCounts.get_count(hist_ngramBuf) + m_delta * vocSize);
 
   //  END_LAB
   //
@@ -170,6 +206,34 @@ double LangModel::get_prob_witten_bell(const vector<int>& ngram) const {
   //      "retProb" should be set to the smoothed n-gram probability
   //          of the last word in the n-gram given the previous words.
   //
+
+  vector<int> ngramBuf;
+  vector<int> hist_ngramBuf;
+  retProb = 1.0 / vocSize;
+  for (int n = 1; n <= m_n; ++n) {
+    ngramBuf.clear();
+    ngramBuf.insert(ngramBuf.end(),
+                    ngram.end() - n,
+                    ngram.end());
+
+    hist_ngramBuf.clear();
+    if (n == 1) {
+      hist_ngramBuf.push_back(0); // <epsilon> 0
+    }
+    else {
+      hist_ngramBuf.insert(hist_ngramBuf.end(),
+                            ngramBuf.begin(),
+                            ngramBuf.end() - 1);
+    }
+    
+    int histCnt = m_histCounts.get_count(hist_ngramBuf);
+    if (histCnt != 0){
+      int predCnt = m_predCounts.get_count(ngramBuf);
+      int histOnePlusCnt = m_histOnePlusCounts.get_count(hist_ngramBuf);
+      double t_lambda =  histCnt * 1.0 / (histCnt + histOnePlusCnt);
+      retProb = t_lambda * predCnt / histCnt + (1 - t_lambda) * retProb;
+    }
+  }
 
   //  END_LAB
   //
