@@ -8,6 +8,7 @@ ifeq ($(OPTFLAGS),)
 endif
 
 CXX = g++
+CPPFLAGS = -I/usr/local/boost_1_69_0
 CXXFLAGS = -Wall -std=c++11
 LDFLAGS = $(OPTFLAGS)
 LDLIBS = -lm

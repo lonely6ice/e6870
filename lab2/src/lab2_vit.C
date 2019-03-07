@@ -95,9 +95,30 @@ double viterbi(const Graph& graph, const matrix<double>& gmmProbs,
   //  the best path is provided for you below.
   // assert(graph.get_state_count() == stateCnt);
 
+  
   // 1.Init chart
 
   // 2.Recursive
+  int startIdx = graph.get_start_state();
+  chart(0, startIdx).assign(0, -1);
+
+  for (int frmIdx = 0; frmIdx < frmCnt; ++frmIdx) {
+    for (int stateIdx = 0; stateIdx < stateCnt; ++stateIdx) {
+      double logProb = chart(frmIdx, stateIdx).get_log_prob();
+      if (logProb == g_zeroLogProb) continue;
+      int arcCnt = graph.get_arc_count(stateIdx);
+      int arcId = graph.get_first_arc_id(stateIdx);
+      for (int arcIdx = 0; arcIdx < arcCnt; ++arcIdx) {
+        Arc arc;
+        arcId = graph.get_arc(arcId, arc);
+        int dstState = arc.get_dst_state();
+        double curlogProb = logProb + arc.get_log_prob() +
+                            acousWgt * gmmProbs(frmIdx, arc.get_gmm());
+        if (curlogProb > chart(frmIdx + 1, dstState).get_log_prob())
+          chart(frmIdx + 1, dstState).assign(curlogProb, arcId - 1);
+      }
+    }
+  }
 
   // DEBUG chart BEGIN
   // int frmMax = frmCnt + 1;

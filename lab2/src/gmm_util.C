@@ -63,6 +63,27 @@ double GmmStats::add_gmm_count(unsigned gmmIdx, double posterior,
 
   // suppose each GMM only has one component
 
+  double old_c = m_gaussCounts[gaussIdx];
+  double new_c = old_c + posterior;
+  double old_m, new_m, old_s, new_s, diff;
+  for (int dimIdx = 0; dimIdx < dimCnt; ++dimIdx) {
+    if (old_c == 0.0) {
+      new_m = feats[dimIdx];
+      new_s = 0;
+    }
+    else {
+      old_m = m_gaussStats1(gaussIdx, dimIdx);
+      diff = (feats[dimIdx] - old_m);
+      new_m = old_m + posterior * diff / new_c;
+      old_s = m_gaussStats2(gaussIdx, dimIdx);
+      new_s = old_s + old_c * (new_m - old_m)
+                    * diff;
+    }
+    m_gaussStats1(gaussIdx, dimIdx) = new_m;
+    m_gaussStats2(gaussIdx, dimIdx) = new_s;
+  }
+  m_gaussCounts[gaussIdx] = new_c;
+
   //  END_LAB
   //
 
@@ -117,6 +138,14 @@ void GmmStats::reestimate() const {
   //
   //      for each dimension of each Gaussian with the reestimated
   //      values of the means and variances.
+
+  for (int gaussIdx = 0; gaussIdx < gaussCnt; ++gaussIdx) {
+    for (int dimIdx = 0; dimIdx < dimCnt; ++dimIdx) {
+      m_gmmSet.set_gaussian_mean(gaussIdx, dimIdx, m_gaussStats1(gaussIdx, dimIdx));
+      m_gmmSet.set_gaussian_var(gaussIdx, dimIdx, 
+                        m_gaussStats2(gaussIdx, dimIdx) / m_gaussCounts[gaussIdx]);
+    }
+  }
 
   //  END_LAB
   //
